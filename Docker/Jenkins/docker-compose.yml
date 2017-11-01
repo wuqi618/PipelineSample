@@ -1,0 +1,8 @@
+version: '2'
+services:
+  jenkins:
+    build: .
+    volumes:
+      - ./data:/data
+    ports:
+      - 8081:8080
