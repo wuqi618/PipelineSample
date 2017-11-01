@@ -14,7 +14,7 @@ namespace Tests
         {
             var valuesController = new ValuesController();
             var result = valuesController.Get();
-            Assert.Equal(1, result.Count());
+            Assert.Equal(2, result.Count());
         }
     }
 }
