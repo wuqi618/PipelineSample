@@ -29,7 +29,7 @@ RUN sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
 RUN sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
 RUN sudo apt-get install -y apt-transport-https
 RUN sudo apt-get update
-RUN sudo apt-get install -y dotnet-dev-1.1.4
+RUN sudo apt-get install -y dotnet-sdk-2.0.2
 
 VOLUME [ "/data" ]
 
