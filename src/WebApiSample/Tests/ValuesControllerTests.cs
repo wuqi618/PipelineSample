@@ -10,7 +10,7 @@ namespace Tests
     public class ValuesControllerTests
     {
         [Fact]
-        public void GetShouldSucceed()
+        public void GetShouldReturnSuccess()
         {
             var valuesController = new ValuesController();
             var result = valuesController.Get();
