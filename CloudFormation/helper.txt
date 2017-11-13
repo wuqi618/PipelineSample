@@ -1,0 +1,5 @@
+cloud init output:
+/var/log/cloud-init-output.log
+
+jenkins status:
+/etc/init.d/jenkins status

@@ -1,0 +1,45 @@
+{
+  "Parameters": {
+    "CIDRRange": {
+      "Type": "String",
+      "Default": "10.250.0.0",
+      "Description": "VPCCIDR Range (will be a /16 block)",
+      "AllowedValues": ["10.250.0.0","10.251.0.0"]
+    },
+    "VPC": {
+      "Type": "AWS::EC2::VPC::Id"
+    },
+    "Subnet": {
+      "Type": "AWS::EC2::Subnet::Id"
+    }
+  },
+  "Mappings": {
+    "VPCRanges": {
+      "10.250.0.0": {
+        "PublicSubnetAZ1"   : "10.250.0.0/24",
+        "PublicSubnetAZ2"   : "10.250.1.0/24",
+        "PrivateSubnetAZ1"  : "10.250.10.0/24",
+        "PrivateSubnetAZ2"  : "10.250.11.0/24"
+      },
+      "10.251.0.0": {
+        "PublicSubnetAZ1"   : "10.251.0.0/24",
+        "PublicSubnetAZ2"   : "10.251.1.0/24",
+        "PrivateSubnetAZ1"  : "10.251.10.0/24",
+        "PrivateSubnetAZ2"  : "10.251.11.0/24"
+      }
+    }
+  },
+  "Resources": {
+    "VPCBase": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": { "Fn::Join" : ["", [{ "Ref" : "CIDRRange" }, "/16"]] },
+        "EnableDnsSupport": "True",
+        "EnableDnsHostnames": "True",
+        "Tags": [
+          { "Key": "Name", "Value":    { "Fn::Join" : ["", [{ "Ref" : "AWS::StackName" }, "-VPC"]] } }
+        ]
+      }
+    }
+  }
+}
