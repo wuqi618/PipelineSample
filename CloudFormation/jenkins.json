@@ -37,14 +37,21 @@
         "ImageId" : { "Ref": "ImageId" },
         "InstanceType" : { "Ref": "InstanceType" },
         "KeyName" : { "Ref": "KeyName" },
-        "SecurityGroupIds" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "SubnetId" : { "Ref": "Subnet" },
         "Tags": [ { "Key": "Name", "Value": { "Fn::Join" : ["", [{ "Ref" : "AWS::StackName" }, "-jenkins"]] } } ],
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": true,
+            "DeleteOnTermination": true,
+            "DeviceIndex": "0",
+            "SubnetId": { "Ref": "Subnet" },
+            "GroupSet": [ { "Ref" : "InstanceSecurityGroup" } ]
+          }
+        ],
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
           "#!/bin/bash -xe\n",
           "sudo apt-get update\n",
-          "sudo apt-get -y install python-pip\n",
-          "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+          "sudo apt-get -y install python-setuptools\n",
+          "sudo easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
           
           "sudo apt-get install -y software-properties-common python-software-properties debconf-utils\n",
           "sudo add-apt-repository -y ppa:webupd8team/java\n",
