@@ -29,9 +29,10 @@
       "Properties" : {
         "SecurityGroups" : [ { "Ref" : "LoadBalancerSecurityGroup" } ],
         "Subnets" : { "Ref" : "Subnets" },
-        "Listeners" : [ { "LoadBalancerPort" : "80", "InstancePort" : "8980", "Protocol" : "HTTP" } ],
+        "Listeners" : [ { "LoadBalancerPort" : "80", "InstancePort" : "8080", "Protocol" : "HTTP" } ],
+        "CrossZone" : "true",
         "HealthCheck" : {
-          "Target" : "HTTP:80/",
+          "Target" : "TCP:22",
           "HealthyThreshold" : "3",
           "UnhealthyThreshold" : "5",
           "Interval" : "5",
@@ -44,8 +45,7 @@
       "Properties" : {
         "GroupDescription" : "Enable HTTP access on port 80",
         "VpcId" : { "Ref" : "VPC" },
-        "SecurityGroupIngress" : [ { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0" } ],
-        "SecurityGroupEgress" : [ { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"} ]
+        "SecurityGroupIngress" : [ { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0" } ]
       }
     },
     "WebServerGroup" : {
@@ -88,6 +88,10 @@
           "sudo apt-get -y install python-setuptools\n",
           "sudo easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
           
+          "sudo apt-get -y install nfs-common\n",
+          "sudo mkdir /efs-jenkins-home\n",
+          "sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 fs-c308e1fa.efs.ap-southeast-2.amazonaws.com:/ /efs-jenkins-home\n",
+
           "sudo apt-get install -y software-properties-common python-software-properties debconf-utils\n",
           "sudo add-apt-repository -y ppa:webupd8team/java\n",
           "sudo apt-get update\n",
@@ -98,10 +102,12 @@
           "sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'\n",
           "sudo apt-get update\n",
           "sudo apt-get install -y jenkins\n",
+
+          "sudo sed -i 's/JENKINS_HOME=.*/JENKINS_HOME=\/efs-jenkins-home/g' /etc/default/jenkins\n",
+          "sudo chown jenkins:jenkins /efs-jenkins-home\n",
+          "sudo /etc/init.d/jenkins restart\n",
           
-          "sudo apt-get install -y git\n",
-          
-          "sudo apt-get install -y curl\n",
+          "sudo apt-get install -y git curl\n",
           
           "curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg\n",
           "sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg\n",
