@@ -186,11 +186,23 @@
         "PortRange" : {"From" : "80", "To" : "80"}
       }
     },
+    "InboundHTTPSPublicNetworkAclEntry" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "Properties" : {
+        "NetworkAclId" : {"Ref" : "PublicNetworkAcl"},
+        "RuleNumber" : "200",
+        "Protocol" : "6",
+        "RuleAction" : "allow",
+        "Egress" : "false",
+        "CidrBlock" : "0.0.0.0/0",
+        "PortRange" : {"From" : "443", "To" : "443"}
+      }
+    },
     "InboundDynamicPortsPublicNetworkAclEntry" : {
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
         "NetworkAclId" : {"Ref" : "PublicNetworkAcl"},
-        "RuleNumber" : "101",
+        "RuleNumber" : "300",
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "false",
@@ -202,24 +214,12 @@
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
         "NetworkAclId" : {"Ref" : "PublicNetworkAcl"},
-        "RuleNumber" : "200",
+        "RuleNumber" : "400",
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "false",
         "CidrBlock" : "0.0.0.0/0",
         "PortRange" : {"From" : "22", "To" : "22"}
-      }
-    },
-    "InboundHTTPSPublicNetworkAclEntry" : {
-      "Type" : "AWS::EC2::NetworkAclEntry",
-      "Properties" : {
-        "NetworkAclId" : {"Ref" : "PublicNetworkAcl"},
-        "RuleNumber" : "200",
-        "Protocol" : "6",
-        "RuleAction" : "allow",
-        "Egress" : "false",
-        "CidrBlock" : "0.0.0.0/0",
-        "PortRange" : {"From" : "443", "To" : "443"}
       }
     },
     "OutboundHTTPPublicNetworkAclEntry" : {
@@ -234,11 +234,23 @@
         "PortRange" : {"From" : "80", "To" : "80"}
       }
     },
+    "OutboundHTTPSPublicNetworkAclEntry" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "Properties" : {
+        "NetworkAclId" : {"Ref" : "PublicNetworkAcl"},
+        "RuleNumber" : "200",
+        "Protocol" : "6",
+        "RuleAction" : "allow",
+        "Egress" : "true",
+        "CidrBlock" : "0.0.0.0/0",
+        "PortRange" : {"From" : "443", "To" : "443"}
+      }
+    },
     "OutBoundDynamicPortPublicNetworkAclEntry" : {
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
         "NetworkAclId" : {"Ref" : "PublicNetworkAcl"},
-        "RuleNumber" : "101",
+        "RuleNumber" : "300",
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "true",
@@ -250,24 +262,12 @@
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
         "NetworkAclId" : {"Ref" : "PublicNetworkAcl"},
-        "RuleNumber" : "200",
+        "RuleNumber" : "400",
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "true",
         "CidrBlock" : "0.0.0.0/0",
         "PortRange" : {"From" : "22", "To" : "22"}
-      }
-    },
-    "OutboundHTTPSPublicNetworkAclEntry" : {
-      "Type" : "AWS::EC2::NetworkAclEntry",
-      "Properties" : {
-        "NetworkAclId" : {"Ref" : "PublicNetworkAcl"},
-        "RuleNumber" : "200",
-        "Protocol" : "6",
-        "RuleAction" : "allow",
-        "Egress" : "true",
-        "CidrBlock" : "0.0.0.0/0",
-        "PortRange" : {"From" : "443", "To" : "443"}
       }
     },
     "PublicNetAZ1NetworkAclAssociation" : {
@@ -295,7 +295,7 @@
     "EFSSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
-        "VpcId" : { "Ref" : "VPC" },
+        "VpcId" : { "Ref" : "VPCBase" },
         "GroupDescription" : "EFS security group",
         "SecurityGroupIngress" : [
           {"IpProtocol" : "tcp", "FromPort" : "2049", "ToPort" : "2049", "CidrIp" : { "Fn::GetAtt": [ "VPCBase", "CidrBlock" ] } }

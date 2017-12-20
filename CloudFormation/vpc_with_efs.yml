@@ -1,0 +1,302 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  CIDRRange:
+    Type: String
+    Default: 10.250.0.0
+    Description: VPCCIDR Range (will be a /16 block)
+    AllowedValues:
+    - 10.250.0.0
+    - 10.251.0.0
+Mappings:
+  VPCRanges:
+    10.250.0.0:
+      PublicSubnetAZ1: 10.250.0.0/24
+      PublicSubnetAZ2: 10.250.1.0/24
+      PrivateSubnetAZ1: 10.250.10.0/24
+      PrivateSubnetAZ2: 10.250.11.0/24
+    10.251.0.0:
+      PublicSubnetAZ1: 10.251.0.0/24
+      PublicSubnetAZ2: 10.251.1.0/24
+      PrivateSubnetAZ1: 10.251.10.0/24
+      PrivateSubnetAZ2: 10.251.11.0/24
+Resources:
+  VPCBase:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Join [ '', [ !Ref CIDRRange, '/16' ] ]
+      EnableDnsSupport: 'True'
+      EnableDnsHostnames: 'True'
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-VPC' ] ]
+  PublicNetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - '0'
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      CidrBlock: !FindInMap [ VPCRanges, !Ref CIDRRange, PublicSubnetAZ1 ]
+      MapPublicIpOnLaunch: 'True'
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-PublicAZ1' ] ]
+      VpcId: !Ref VPCBase
+  PublicNetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - '1'
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      CidrBlock: !FindInMap [ VPCRanges, !Ref CIDRRange, PublicSubnetAZ2 ]
+      MapPublicIpOnLaunch: 'True'
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-PublicAZ2' ] ]
+      VpcId: !Ref VPCBase
+  PrivateNetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - '0'
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      CidrBlock: !FindInMap [ VPCRanges, !Ref CIDRRange, PrivateSubnetAZ1 ]
+      MapPublicIpOnLaunch: 'False'
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-PrivateAZ1' ] ]
+      - Key: Network
+        Value: private
+      VpcId: !Ref VPCBase
+  PrivateNetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - '1'
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      CidrBlock: !FindInMap [ VPCRanges, !Ref CIDRRange, PrivateSubnetAZ2 ]
+      MapPublicIpOnLaunch: 'False'
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-PrivateAZ2' ] ]
+      - Key: Network
+        Value: private
+      VpcId: !Ref VPCBase
+  IGWBase:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-IGW' ] ]
+  VGAIGWBase:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref IGWBase
+      VpcId: !Ref VPCBase
+  RouteTablePublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPCBase
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-PublicRT' ] ]
+  RouteTablePrivateAZ1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPCBase
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-PrivateAZ1RT' ] ]
+  RouteTablePrivateAZ2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPCBase
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-PrivateAZ2RT' ] ]
+  RoutePublicDefault:
+    DependsOn:
+    - VGAIGWBase
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePublic
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref IGWBase
+  RouteAssociationPublicAZ1Default:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicNetAZ1
+      RouteTableId: !Ref RouteTablePublic
+  RouteAssociationPublicAZ2Default:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicNetAZ2
+      RouteTableId: !Ref RouteTablePublic
+  RouteAssociationPrivateAZ1Default:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateNetAZ1
+      RouteTableId: !Ref RouteTablePrivateAZ1
+  RouteAssociationPrivateAZ2Default:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateNetAZ2
+      RouteTableId: !Ref RouteTablePrivateAZ2
+  PublicNetworkAcl:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: !Ref VPCBase
+      Tags:
+      - Key: Application
+        Value: !Ref AWS::StackId
+      - Key: Network
+        Value: Public
+  InboundHTTPPublicNetworkAclEntry:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref PublicNetworkAcl
+      RuleNumber: '100'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'false'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '80'
+        To: '80'
+  InboundHTTPSPublicNetworkAclEntry:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref PublicNetworkAcl
+      RuleNumber: '200'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'false'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '443'
+        To: '443'
+  InboundDynamicPortsPublicNetworkAclEntry:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref PublicNetworkAcl
+      RuleNumber: '300'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'false'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '1024'
+        To: '65535'
+  InboundSSHPublicNetworkAclEntry:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref PublicNetworkAcl
+      RuleNumber: '400'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'false'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '22'
+        To: '22'
+  OutboundHTTPPublicNetworkAclEntry:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref PublicNetworkAcl
+      RuleNumber: '100'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'true'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '80'
+        To: '80'
+  OutboundHTTPSPublicNetworkAclEntry:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref PublicNetworkAcl
+      RuleNumber: '200'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'true'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '443'
+        To: '443'
+  OutBoundDynamicPortPublicNetworkAclEntry:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref PublicNetworkAcl
+      RuleNumber: '300'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'true'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '1024'
+        To: '65535'
+  OutboundSSHPublicNetworkAclEntry:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref PublicNetworkAcl
+      RuleNumber: '400'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'true'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '22'
+        To: '22'
+  PublicNetAZ1NetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref PublicNetAZ1
+      NetworkAclId: !Ref PublicNetworkAcl
+  PublicNetAZ2NetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref PublicNetAZ2
+      NetworkAclId: !Ref PublicNetworkAcl
+  EFSFileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      FileSystemTags:
+      - Key: Name
+        Value: !Join [ '', [ !Ref 'AWS::StackName', '-EFS' ] ]
+  EFSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPCBase
+      GroupDescription: EFS security group
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '2049'
+        ToPort: '2049'
+        CidrIp: !GetAtt VPCBase.CidrBlock
+  EFSPublicNetAZ1MountTarget:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref EFSFileSystem
+      SecurityGroups:
+      - !Ref EFSSecurityGroup
+      SubnetId: !Ref PublicNetAZ1
+  EFSPublicNetAZ2MountTarget:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref EFSFileSystem
+      SecurityGroups:
+      - !Ref EFSSecurityGroup
+      SubnetId: !Ref PublicNetAZ2
+Outputs:
+  VPCID:
+    Value: !Ref VPCBase
+  SubnetPublicAZ1:
+    Value: !Ref PublicNetAZ1
+  SubnetPublicAZ2:
+    Value: !Ref PublicNetAZ2
+  SubnetPrivateAZ1:
+    Value: !Ref PrivateNetAZ1
+  SubnetPrivateAZ2:
+    Value: !Ref PrivateNetAZ2
+  DefaultSG:
+    Value: !GetAtt VPCBase.DefaultSecurityGroup
