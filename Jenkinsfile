@@ -18,14 +18,14 @@ node {
     }
     
     stage('publish') {
-        dir('src/WebApiSample/') {
+        dir('src/WebApiSample/WebApiSample/') {
             sh 'rm -rf Publish'
-            sh 'dotnet publish WebApiSample/WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
+            sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
         }
     }
     
     stage('zip & s3') {
-        dir('src/WebApiSample/') {
+        dir('src/WebApiSample/WebApiSample/') {
             sh 'rm -f publish.zip'
             sh 'zip -r publish.zip Publish'
             sh 'aws s3 cp publish.zip s3://webapisample-publish/publish-$BUILD_NUMBER.zip'
