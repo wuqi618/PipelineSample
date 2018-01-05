@@ -31,12 +31,6 @@ node {
             sh "aws s3 cp publish.zip s3://webapisample-publish/publish-${BUILD_NUMBER}.zip"
         }
     }
-
-    stage('s3') {
-        dir('src/WebApiSample/') {
-            sh 'aws s3 cp publish.zip s3://webapisample-publish'
-        }
-    }
     
     stage('archive') {
         dir('src/WebApiSample/Tests/') {
