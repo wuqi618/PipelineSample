@@ -79,9 +79,13 @@ Resources:
         ToPort: '22'
         CidrIp: !Join [ '', [ !Ref MyIP, '/32' ] ]
       - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
+      - IpProtocol: tcp
         FromPort: '8080'
         ToPort: '8080'
-        SourceSecurityGroupName: !Ref LoadBalancerSecurityGroup
+        SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
   InstanceRole:
     Type: "AWS::IAM::Role"
     Properties: 
