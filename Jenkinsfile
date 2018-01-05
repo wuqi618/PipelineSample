@@ -28,7 +28,7 @@ node {
         dir('src/WebApiSample/WebApiSample/') {
             sh 'rm -f publish.zip'
             sh 'zip -r publish.zip Publish'
-            sh 'aws s3 cp publish.zip s3://webapisample-publish/publish-$BUILD_NUMBER.zip'
+            sh "aws s3 cp publish.zip s3://webapisample-publish/publish-${BUILD_NUMBER}.zip"
         }
     }
 

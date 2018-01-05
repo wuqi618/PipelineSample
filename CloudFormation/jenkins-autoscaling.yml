@@ -166,13 +166,14 @@ Resources:
           - - "#!/bin/bash -xe\n"
             - "sudo apt-get update\n"
             - "sudo apt-get -y install python-setuptools\n"
+            - "sudo apt-get -y install awscli\n"
             - "sudo easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n"
 
             - "sudo apt-get -y install nfs-common\n"
             - "sudo mkdir /efs-jenkins-home\n"
             - !Join [ '', [ "sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ", !Ref EFS, ":/ /efs-jenkins-home\n"] ]
 
-            - "sudo apt-get install -y software-properties-common python-software-properties debconf-utils\n"
+            - "sudo apt-get install -y software-properties-common python-software-properties debconf-utils zip\n"
             - "sudo add-apt-repository -y ppa:webupd8team/java\n"
             - "sudo apt-get update\n"
             - "echo \"oracle-java8-installer shared/accepted-oracle-license-v1-1 select true\" | sudo debconf-set-selections\n"
