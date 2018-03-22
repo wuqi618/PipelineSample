@@ -307,6 +307,7 @@ Resources:
       Path: "/"
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
         - "arn:aws:iam::aws:policy/AmazonEC2ContainerServiceFullAccess"
   JenkinsEC2Policy:
     Type: "AWS::IAM::Policy"
@@ -349,31 +350,6 @@ Resources:
           Condition:
             StringLike:
               iam:AWSServiceName: ec2scheduled.amazonaws.com
-      Roles: 
-        - !Ref JenkinsRole
-  JenkinsECRPolicy:
-    Type: "AWS::IAM::Policy"
-    Properties: 
-      PolicyName: !Sub ${AWS::StackName}-ECRPowerUser
-      PolicyDocument: 
-        Version: '2012-10-17'
-        Statement:
-        - Effect: Allow
-          Action:
-          - ecr:GetAuthorizationToken
-          - ecr:BatchCheckLayerAvailability
-          - ecr:GetDownloadUrlForLayer
-          - ecr:GetRepositoryPolicy
-          - ecr:DescribeRepositories
-          - ecr:ListImages
-          - ecr:DescribeImages
-          - ecr:BatchGetImage
-          - ecr:InitiateLayerUpload
-          - ecr:UploadLayerPart
-          - ecr:CompleteLayerUpload
-          - ecr:PutImage
-          Resource:
-          - !GetAtt ECR.Arn
       Roles: 
         - !Ref JenkinsRole
 Outputs:

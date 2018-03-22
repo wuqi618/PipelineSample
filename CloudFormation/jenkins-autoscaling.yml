@@ -147,7 +147,11 @@ Resources:
             - "sudo apt-get update\n"
             - "sudo apt-get install -y dotnet-sdk-2.0.2\n"
 
-            - "sudo apt-get install -y git-core\n"
+            - "sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -\n"
+            - "sudo add-apt-repository \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\"\n"
+            - "sudo apt-get update\n"
+            - "sudo apt-get install -y docker-ce\n"
+            - "sudo usermod -aG docker jenkins\n"
 
             - "# Signal the status from cfn-init\n"
             - "/usr/local/bin/cfn-signal -e $? "
