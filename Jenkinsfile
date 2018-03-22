@@ -22,7 +22,7 @@ node {
             //sh 'rm -rf Publish'
             //sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
             def output = sh returnStdout: true, script: 'aws ecr get-login --region ap-southeast-2'
-            output = output.replaceFirst(" -e none ", "")
+            output = output.replaceFirst(" -e none ", " ")
             sh "$output"
             sh '''output=$(aws ecr get-login --region ap-southeast-2)
                 echo $output
