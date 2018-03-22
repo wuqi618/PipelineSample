@@ -7,59 +7,63 @@ Parameters:
     Type: List<AWS::EC2::Subnet::Id>
   ImageId:
     Type: String
-    Default: ami-41c12e23
+    Default: ami-33ab5251
   InstanceType:
     Type: String
     Default: t2.micro
     AllowedValues:
     - t2.micro
+  InstanceRole:
+    Type: String
+    Description: the name of the role, not the arn
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
   InstanceCount:
     Type: Number
     Default: '1'
   EFS:
-    Type: String    
+    Type: String
+    Description: the dns name of the EFS
   MyIP:
     Type: String
 Resources:
-  ElasticLoadBalancer:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
-    Properties:
-      SecurityGroups:
-      - !Ref LoadBalancerSecurityGroup
-      Subnets: !Ref Subnets
-      Listeners:
-      - LoadBalancerPort: '80'
-        InstancePort: '8080'
-        Protocol: HTTP
-      CrossZone: 'true'
-      HealthCheck:
-        Target: TCP:22
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '5'
-        Interval: '5'
-        Timeout: '3'
-  LoadBalancerSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Enable HTTP access on port 80
-      VpcId: !Ref VPC
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: '80'
-        ToPort: '80'
-        CidrIp: !Join [ '', [ !Ref MyIP, '/32' ] ]
+  # ElasticLoadBalancer:
+  #   Type: AWS::ElasticLoadBalancing::LoadBalancer
+  #   Properties:
+  #     SecurityGroups:
+  #     - !Ref LoadBalancerSecurityGroup
+  #     Subnets: !Ref Subnets
+  #     Listeners:
+  #     - LoadBalancerPort: '80'
+  #       InstancePort: '8080'
+  #       Protocol: HTTP
+  #     CrossZone: 'true'
+  #     HealthCheck:
+  #       Target: TCP:22
+  #       HealthyThreshold: '3'
+  #       UnhealthyThreshold: '5'
+  #       Interval: '5'
+  #       Timeout: '3'
+  # LoadBalancerSecurityGroup:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: Enable HTTP access on port 80
+  #     VpcId: !Ref VPC
+  #     SecurityGroupIngress:
+  #     - IpProtocol: tcp
+  #       FromPort: '80'
+  #       ToPort: '80'
+  #       CidrIp: !Join [ '', [ !Ref MyIP, '/32' ] ]
   WebServerGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       VPCZoneIdentifier: !Ref Subnets
       LaunchConfigurationName: !Ref LaunchConfig
       MinSize: '1'
-      MaxSize: '2'
+      MaxSize: '1'
       DesiredCapacity: !Ref InstanceCount
-      LoadBalancerNames:
-      - !Ref ElasticLoadBalancer
+      # LoadBalancerNames:
+      # - !Ref ElasticLoadBalancer
       HealthCheckType: EC2
       Tags:
       - Key: Network
@@ -79,71 +83,17 @@ Resources:
         ToPort: '22'
         CidrIp: !Join [ '', [ !Ref MyIP, '/32' ] ]
       - IpProtocol: tcp
-        FromPort: '22'
-        ToPort: '22'
-        SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
-      - IpProtocol: tcp
         FromPort: '8080'
         ToPort: '8080'
-        SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
-  InstanceRole:
-    Type: "AWS::IAM::Role"
-    Properties: 
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - ec2.amazonaws.com
-          Action:
-          - sts:AssumeRole
-      Path: "/"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-  InstancePolicy:
-    Type: "AWS::IAM::Policy"
-    Properties: 
-      PolicyName: "EC2T2MicroFullAccess"
-      PolicyDocument: 
-        Version: '2012-10-17'
-        Statement:
-        - Action: ec2:*
-          Effect: Allow
-          Resource: "*"
-          Condition:
-            StringEquals:
-              ec2:InstanceType:
-              - t2.micro
-        - Effect: Allow
-          Action: elasticloadbalancing:*
-          Resource: "*"
-        - Effect: Allow
-          Action: cloudwatch:*
-          Resource: "*"
-        - Effect: Allow
-          Action: autoscaling:*
-          Resource: "*"
-        - Effect: Allow
-          Action: iam:CreateServiceLinkedRole
-          Resource: arn:aws:iam::*:role/aws-service-role/spot.amazonaws.com/AWSServiceRoleForEC2Spot*
-          Condition:
-            StringLike:
-              iam:AWSServiceName: spot.amazonaws.com
-        - Effect: Allow
-          Action: iam:CreateServiceLinkedRole
-          Resource: arn:aws:iam::*:role/aws-service-role/spotfleet.amazonaws.com/AWSServiceRoleForEC2Spot*
-          Condition:
-            StringLike:
-              iam:AWSServiceName: spotfleet.amazonaws.com
-        - Effect: Allow
-          Action: iam:CreateServiceLinkedRole
-          Resource: arn:aws:iam::*:role/aws-service-role/ec2scheduled.amazonaws.com/AWSServiceRoleForEC2Scheduled*
-          Condition:
-            StringLike:
-              iam:AWSServiceName: ec2scheduled.amazonaws.com
-      Roles: 
-        - !Ref InstanceRole
+        CidrIp: !Join [ '', [ !Ref MyIP, '/32' ] ]
+      # - IpProtocol: tcp
+      #   FromPort: '22'
+      #   ToPort: '22'
+      #   SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
+      # - IpProtocol: tcp
+      #   FromPort: '8080'
+      #   ToPort: '8080'
+      #   SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
   InstanceProfile: 
     Type: "AWS::IAM::InstanceProfile"
     Properties: 
@@ -196,6 +146,8 @@ Resources:
             - "sudo apt-get install -y apt-transport-https\n"
             - "sudo apt-get update\n"
             - "sudo apt-get install -y dotnet-sdk-2.0.2\n"
+
+            - "sudo apt-get install -y git-core\n"
 
             - "# Signal the status from cfn-init\n"
             - "/usr/local/bin/cfn-signal -e $? "

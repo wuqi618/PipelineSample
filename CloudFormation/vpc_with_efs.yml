@@ -287,6 +287,95 @@ Resources:
       SecurityGroups:
       - !Ref EFSSecurityGroup
       SubnetId: !Ref PublicNetAZ2
+  ECR:
+    Type: "AWS::ECR::Repository"
+    Properties:
+      RepositoryName: pipeline-sample-ecr
+  JenkinsRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-JenkinsRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        - "arn:aws:iam::aws:policy/AmazonEC2ContainerServiceFullAccess"
+  JenkinsEC2Policy:
+    Type: "AWS::IAM::Policy"
+    Properties: 
+      PolicyName: !Sub ${AWS::StackName}-EC2T2MicroFullAccess
+      PolicyDocument: 
+        Version: '2012-10-17'
+        Statement:
+        - Action: ec2:*
+          Effect: Allow
+          Resource: "*"
+          Condition:
+            StringEquals:
+              ec2:InstanceType:
+              - t2.micro
+        - Effect: Allow
+          Action: elasticloadbalancing:*
+          Resource: "*"
+        - Effect: Allow
+          Action: cloudwatch:*
+          Resource: "*"
+        - Effect: Allow
+          Action: autoscaling:*
+          Resource: "*"
+        - Effect: Allow
+          Action: iam:CreateServiceLinkedRole
+          Resource: arn:aws:iam::*:role/aws-service-role/spot.amazonaws.com/AWSServiceRoleForEC2Spot*
+          Condition:
+            StringLike:
+              iam:AWSServiceName: spot.amazonaws.com
+        - Effect: Allow
+          Action: iam:CreateServiceLinkedRole
+          Resource: arn:aws:iam::*:role/aws-service-role/spotfleet.amazonaws.com/AWSServiceRoleForEC2Spot*
+          Condition:
+            StringLike:
+              iam:AWSServiceName: spotfleet.amazonaws.com
+        - Effect: Allow
+          Action: iam:CreateServiceLinkedRole
+          Resource: arn:aws:iam::*:role/aws-service-role/ec2scheduled.amazonaws.com/AWSServiceRoleForEC2Scheduled*
+          Condition:
+            StringLike:
+              iam:AWSServiceName: ec2scheduled.amazonaws.com
+      Roles: 
+        - !Ref JenkinsRole
+  JenkinsECRPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties: 
+      PolicyName: !Sub ${AWS::StackName}-ECRPowerUser
+      PolicyDocument: 
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - ecr:GetAuthorizationToken
+          - ecr:BatchCheckLayerAvailability
+          - ecr:GetDownloadUrlForLayer
+          - ecr:GetRepositoryPolicy
+          - ecr:DescribeRepositories
+          - ecr:ListImages
+          - ecr:DescribeImages
+          - ecr:BatchGetImage
+          - ecr:InitiateLayerUpload
+          - ecr:UploadLayerPart
+          - ecr:CompleteLayerUpload
+          - ecr:PutImage
+          Resource:
+          - !GetAtt ECR.Arn
+      Roles: 
+        - !Ref JenkinsRole
 Outputs:
   VPCID:
     Value: !Ref VPCBase
@@ -300,3 +389,7 @@ Outputs:
     Value: !Ref PrivateNetAZ2
   DefaultSG:
     Value: !GetAtt VPCBase.DefaultSecurityGroup
+  JenkinsRole:
+    Value: !Ref JenkinsRole
+  EFS:
+    Value: !Ref EFSFileSystem
