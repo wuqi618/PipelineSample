@@ -21,12 +21,12 @@ node {
         dir('src/WebApiSample/WebApiSample/') {
             sh 'rm -rf Publish'
             sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
-            sh 'output=$(aws ecr get-login --region ap-southeast-2)'
-            sh 'output=${output/ -e none / }'
-            sh 'eval $output'
-            sh 'docker build -t webapisample -f Dockerfile.ci .'
-            sh 'docker tag webapisample:latest 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest'
-            sh 'docker push 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest'
+            sh '''output=$(aws ecr get-login --region ap-southeast-2)
+                output=${output/ -e none / }
+                eval $output
+                docker build -t webapisample -f Dockerfile.ci .
+                docker tag webapisample:latest 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest
+                docker push 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest'''
         }
     }
     
