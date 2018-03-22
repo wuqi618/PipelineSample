@@ -28,10 +28,10 @@ node {
             //    docker build -t webapisample -f Dockerfile.ci .
             //    docker tag webapisample:latest 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest
             //    docker push 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest'''
-            sh 'output=$(aws ecr get-login --region ap-southeast-2)'
-            sh 'echo $output'
-            sh 'output=${output/ -e none / }'
-            sh 'eval $output'
+            sh "output=$(aws ecr get-login --region ap-southeast-2)"
+            sh "echo $output"
+            sh "output=${output/ -e none / }"
+            sh "eval $output"
         }
     }
     
