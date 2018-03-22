@@ -23,7 +23,7 @@ node {
             //sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
             sh '''output=$(aws ecr get-login --region ap-southeast-2)
                 echo $output
-                output=$\{output/ -e none / \}
+                output=$(sed "s/ -e none / /g" <<<$output)
                 eval $output
                 docker build -t webapisample -f Dockerfile.ci .
                 docker tag webapisample:latest 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest
