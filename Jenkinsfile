@@ -11,17 +11,18 @@ node {
         }
     }
     
-    stage('test') {
-        dir('src/WebApiSample/Tests/') {
-            sh 'dotnet xunit -c Release -xml TestResult/TestResult.xml'
-        }
-    }
+    // stage('test') {
+    //     dir('src/WebApiSample/Tests/') {
+    //         sh 'dotnet xunit -c Release -xml TestResult/TestResult.xml'
+    //     }
+    // }
     
     stage('publish') {
         dir('src/WebApiSample/WebApiSample/') {
             sh 'rm -rf Publish'
             sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
             sh '''output=$(aws ecr get-login --region ap-southeast-2)
+                echo $output
                 output=${output/ -e none / }
                 eval $output
                 docker build -t webapisample -f Dockerfile.ci .
