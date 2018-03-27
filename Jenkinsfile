@@ -24,13 +24,9 @@ node {
             def output = sh returnStdout: true, script: 'aws ecr get-login --region ap-southeast-2'
             output = output.replaceFirst(" -e none ", " ")
             sh "$output"
-            sh '''output=$(aws ecr get-login --region ap-southeast-2)
-                echo $output
-                output=$(sed "s/ -e none / /g" <<<$output)
-                eval $output
-                docker build -t webapisample -f Dockerfile.ci .
-                docker tag webapisample:latest 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest
-                docker push 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest'''
+            sh 'docker build -t webapisample -f Dockerfile.ci .'
+            sh 'docker tag webapisample:latest 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest'
+            sh 'docker push 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest'
         }
     }
     
