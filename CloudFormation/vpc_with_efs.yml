@@ -352,6 +352,10 @@ Resources:
               iam:AWSServiceName: ec2scheduled.amazonaws.com
       Roles: 
         - !Ref JenkinsRole
+  ECSCluster:
+    Type: "AWS::ECS::Cluster"
+    Properties:
+      ClusterName: pipeline-cluster
 Outputs:
   VPCID:
     Value: !Ref VPCBase

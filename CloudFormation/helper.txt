@@ -1,5 +1,6 @@
 cloud init output:
 /var/log/cloud-init-output.log
 
-jenkins status:
-/etc/init.d/jenkins status
+restart jenkins
+sudo /etc/init.d/jenkins restart
+Usage: /etc/init.d/jenkins {start|stop|status|restart|force-reload}
