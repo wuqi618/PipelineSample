@@ -25,8 +25,8 @@ node {
             output = output.replaceFirst(" -e none ", " ")
             sh "$output"
             sh 'docker build -t webapisample -f Dockerfile.ci .'
-            sh 'docker tag webapisample:latest 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest'
-            sh 'docker push 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:latest'
+            sh "docker tag webapisample:latest 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:${BUILD_NUMBER}"
+            sh "docker push 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:${BUILD_NUMBER}"
         }
     }
     
@@ -38,13 +38,13 @@ node {
     //     }
     // }
     
-    stage('archive') {
-        dir('src/WebApiSample/Tests/') {
-            step([$class: 'XUnitPublisher', testTimeMargin: '3000', thresholdMode: 1, thresholds: [[$class: 'FailedThreshold', failureNewThreshold: '0', failureThreshold: '0', unstableNewThreshold: '0', unstableThreshold: '0'], [$class: 'SkippedThreshold', failureNewThreshold: '', failureThreshold: '', unstableNewThreshold: '', unstableThreshold: '']], tools: [[$class: 'XUnitDotNetTestType', deleteOutputFiles: true, failIfNotNew: true, pattern: 'TestResult/*.xml', skipNoTestFiles: false, stopProcessingIfError: true]]])
-        }
+    // stage('archive') {
+    //     dir('src/WebApiSample/Tests/') {
+    //         step([$class: 'XUnitPublisher', testTimeMargin: '3000', thresholdMode: 1, thresholds: [[$class: 'FailedThreshold', failureNewThreshold: '0', failureThreshold: '0', unstableNewThreshold: '0', unstableThreshold: '0'], [$class: 'SkippedThreshold', failureNewThreshold: '', failureThreshold: '', unstableNewThreshold: '', unstableThreshold: '']], tools: [[$class: 'XUnitDotNetTestType', deleteOutputFiles: true, failIfNotNew: true, pattern: 'TestResult/*.xml', skipNoTestFiles: false, stopProcessingIfError: true]]])
+    //     }
         
-        dir('src/WebApiSample/WebApiSample/Publish/') {
-            archiveArtifacts '**'
-        }
-    }
+    //     dir('src/WebApiSample/WebApiSample/Publish/') {
+    //         archiveArtifacts '**'
+    //     }
+    // }
 }
