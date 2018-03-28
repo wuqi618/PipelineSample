@@ -287,22 +287,6 @@ Resources:
       SecurityGroups:
       - !Ref EFSSecurityGroup
       SubnetId: !Ref PublicNetAZ2
-  ECR:
-    Type: "AWS::ECR::Repository"
-    Properties:
-      RepositoryName: pipeline-sample-ecr
 Outputs:
-  VPCID:
-    Value: !Ref VPCBase
-  SubnetPublicAZ1:
-    Value: !Ref PublicNetAZ1
-  SubnetPublicAZ2:
-    Value: !Ref PublicNetAZ2
-  SubnetPrivateAZ1:
-    Value: !Ref PrivateNetAZ1
-  SubnetPrivateAZ2:
-    Value: !Ref PrivateNetAZ2
-  DefaultSG:
-    Value: !GetAtt VPCBase.DefaultSecurityGroup
   EFS:
-    Value: !Ref EFSFileSystem
+    Value: !Join [ '', [ !Ref EFSFileSystem, '.efs.', !Ref 'AWS::Region', '.amazonaws.com' ] ]

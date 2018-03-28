@@ -21,6 +21,10 @@ Parameters:
   MyIP:
     Type: String
 Resources:
+  ECR:
+    Type: "AWS::ECR::Repository"
+    Properties:
+      RepositoryName: !Sub ${AWS::StackName}-ecr
   ECSCluster:
     Type: "AWS::ECS::Cluster"
     Properties:
@@ -89,3 +93,6 @@ Resources:
       ResourceSignal:
         Timeout: PT10M
         Count: '1'
+Outputs:
+  ECR:
+    Value: !Ref ECR
