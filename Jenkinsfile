@@ -4,23 +4,23 @@ node {
         checkout scm
     }
     
-    stage('build') {
-       dir('src/WebApiSample/') {
-           sh 'dotnet restore -r ubuntu.16.04-x64'
-           sh 'dotnet build -c Release -r ubuntu.16.04-x64'
-       }
-    }
+    // stage('build') {
+    //    dir('src/WebApiSample/') {
+    //        sh 'dotnet restore -r ubuntu.16.04-x64'
+    //        sh 'dotnet build -c Release -r ubuntu.16.04-x64'
+    //    }
+    // }
     
-    stage('test') {
-        dir('src/WebApiSample/Tests/') {
-            sh 'dotnet xunit -c Release -xml TestResult/TestResult.xml'
-        }
-    }
+    // stage('test') {
+    //     dir('src/WebApiSample/Tests/') {
+    //         sh 'dotnet xunit -c Release -xml TestResult/TestResult.xml'
+    //     }
+    // }
     
     stage('publish') {
         dir('src/WebApiSample/WebApiSample/') {
-            sh 'rm -rf Publish'
-            sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
+            // sh 'rm -rf Publish'
+            // sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
             def output = sh returnStdout: true, script: 'aws ecr get-login --region ap-southeast-2'
             output = output.replaceFirst(" -e none ", " ")
             sh "$output"
@@ -33,6 +33,7 @@ node {
     stage('deploy') {
         dir('CloudFormation/') {
             def dir = sh returnStdout: true, script: 'echo $PWD'
+            dir = dir.trim()
             def image = "531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-ecs-ecr:${BUILD_NUMBER}"
             def cluster = "pipeline-ecs-cluster"
             sh "aws cloudformation create-stack --stack-name webapisample --template-body file://${dir}/ecs.yml --parameters Image=${image},ECSCluster=${cluster}"
