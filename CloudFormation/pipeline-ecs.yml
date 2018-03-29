@@ -96,3 +96,5 @@ Resources:
 Outputs:
   ECR:
     Value: !Ref ECR
+  ECSCluster:
+    Value: !Ref ECSCluster

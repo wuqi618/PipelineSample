@@ -25,8 +25,17 @@ node {
             output = output.replaceFirst(" -e none ", " ")
             sh "$output"
             sh 'docker build -t webapisample -f Dockerfile.ci .'
-            sh "docker tag webapisample:latest 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:${BUILD_NUMBER}"
-            sh "docker push 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-sample-ecr:${BUILD_NUMBER}"
+            sh "docker tag webapisample:latest 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-ecs-ecr:${BUILD_NUMBER}"
+            sh "docker push 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-ecs-ecr:${BUILD_NUMBER}"
+        }
+    }
+
+    stage('deploy') {
+        dir('CloudFormation/') {
+            def dir = sh returnStdout: true, script: '$PWD'
+            def image = "531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-ecs-ecr:${BUILD_NUMBER}"
+            def cluster = "pipeline-ecs-cluster"
+            sh "aws cloudformation create-stack --stack-name webapisample --template-body file://${dir}/ecs.yml --parameters Image=${image},ECSCluster=${cluster}"
         }
     }
     
