@@ -36,7 +36,7 @@ node {
             dir = dir.trim()
             def image = "531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-ecs-ecr:${BUILD_NUMBER}"
             def cluster = "pipeline-ecs-cluster"
-            sh "aws cloudformation create-stack --stack-name webapisample --template-body file://${dir}/ecs.yml --parameters Image=${image},ECSCluster=${cluster}"
+            sh "aws cloudformation create-stack --stack-name webapisample --template-body file://${dir}/ecs.yml --parameters Image=${image},ECSCluster=${cluster} --region ap-southeast-2"
         }
     }
     
