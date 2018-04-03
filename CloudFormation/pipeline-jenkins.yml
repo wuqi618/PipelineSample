@@ -112,7 +112,7 @@ Resources:
           - sts:AssumeRole
       Path: "/"
       ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        # - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
         - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
         - "arn:aws:iam::aws:policy/AmazonEC2ContainerServiceFullAccess"
   JenkinsEC2Policy:
@@ -125,10 +125,12 @@ Resources:
         - Action: ec2:*
           Effect: Allow
           Resource: "*"
+        - Action: ec2:RunInstances
+          Effect: Deny
+          Resource: "*"
           Condition:
-            StringEquals:
-              ec2:InstanceType:
-              - t2.micro
+            StringNotEquals:
+              ec2:InstanceType: t2.micro
         - Effect: Allow
           Action: elasticloadbalancing:*
           Resource: "*"

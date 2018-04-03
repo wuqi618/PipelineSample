@@ -20,11 +20,14 @@ Parameters:
     Default: '1'
   MyIP:
     Type: String
+  VPCCIDR:
+    Type: String
+    Default: 10.250.0.0/16
 Resources:
   ECR:
     Type: "AWS::ECR::Repository"
     Properties:
-      RepositoryName: !Sub ${AWS::StackName}-ecr
+      RepositoryName: "webapisample"
   ECSCluster:
     Type: "AWS::ECS::Cluster"
     Properties:
@@ -52,6 +55,8 @@ Resources:
         FromPort: '80'
         ToPort: '80'
         CidrIp: !Join [ '', [ !Ref MyIP, '/32' ] ]
+      - IpProtocol: '-1'
+        CidrIp: !Ref VPCCIDR
   InstanceProfile: 
     Type: "AWS::IAM::InstanceProfile"
     Properties: 

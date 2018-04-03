@@ -61,7 +61,7 @@ Resources:
       - HttpListener
     Properties:
       Cluster: !Ref ECSCluster
-      DesiredCount: 1
+      DesiredCount: 2
       PlacementStrategies:
         - Type: spread
           Field: instanceId

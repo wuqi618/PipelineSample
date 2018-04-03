@@ -25,8 +25,8 @@ node {
             output = output.replaceFirst(" -e none ", " ")
             sh "$output"
             sh 'docker build -t webapisample -f Dockerfile.ci .'
-            sh "docker tag webapisample:latest 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-ecs-ecr:${BUILD_NUMBER}"
-            sh "docker push 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-ecs-ecr:${BUILD_NUMBER}"
+            sh "docker tag webapisample:latest 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/webapisample:${BUILD_NUMBER}"
+            sh "docker push 531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/webapisample:${BUILD_NUMBER}"
         }
     }
 
@@ -34,7 +34,7 @@ node {
         dir('CloudFormation/') {
             def dir = sh returnStdout: true, script: 'echo $PWD'
             dir = dir.trim()
-            def image = "531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-ecs-ecr:${BUILD_NUMBER}"
+            def image = "531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/webapisample:${BUILD_NUMBER}"
             def cluster = "pipeline-ecs-cluster"
             def vpc = "vpc-9c42f4fb"
             def subnets = "subnet-aa7e1de3\\\\,subnet-98c7b1ff"
