@@ -37,7 +37,7 @@ node {
             def image = "531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/pipeline-ecs-ecr:${BUILD_NUMBER}"
             def cluster = "pipeline-ecs-cluster"
             def vpc = "vpc-9c42f4fb"
-            def subnets = "subnet-aa7e1de3\\,subnet-98c7b1ff"
+            def subnets = "subnet-aa7e1de3\\\\,subnet-98c7b1ff"
             sh "aws cloudformation create-stack --stack-name webapisample --template-body file://${dir}/ecs-WebApiSample.yml --parameters ParameterKey=Image,ParameterValue=${image} ParameterKey=ECSCluster,ParameterValue=${cluster} ParameterKey=VPC,ParameterValue=${vpc} ParameterKey=Subnets,ParameterValue=${subnets} --region ap-southeast-2"
         }
     }
