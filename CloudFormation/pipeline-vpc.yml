@@ -288,5 +288,7 @@ Resources:
       - !Ref EFSSecurityGroup
       SubnetId: !Ref PublicNetAZ2
 Outputs:
+  VPC:
+    Value: !Ref VPCBase
   EFS:
     Value: !Join [ '', [ !Ref EFSFileSystem, '.efs.', !Ref 'AWS::Region', '.amazonaws.com' ] ]
