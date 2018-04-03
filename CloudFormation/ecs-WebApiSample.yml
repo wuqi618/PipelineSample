@@ -67,5 +67,4 @@ Resources:
         - ContainerName: webapisample
           ContainerPort: 80
           TargetGroupArn: !Ref TargetGroup
-      Role: !GetAtt Cell.EcsServiceRole
       TaskDefinition: !Ref TaskDefinition
