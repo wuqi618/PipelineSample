@@ -74,6 +74,7 @@ node {
 
 def parseConfig(path, config, buildNumber) {
     def configFile = new File("${path}/${config}");
+    echo configFile;
     def configJson = new JsonSlurper().parseText(configFile.text);
     configJson.ecr = "${configJson.ecr}:${buildNumber}";
     configJson.subnets = configJson.subnets.join('\\\\,');
