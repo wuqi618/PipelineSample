@@ -20,7 +20,7 @@ node {
     // }
     
     stage('publish') {
-        echo "aaaa"
+        //echo "aaaa"
         def path = "${pwd()}/CloudFormation/ecs-WebApiSample.config";
         echo path;
         def configJson = getConfig(path)
@@ -31,7 +31,7 @@ node {
             //def buildNumber = "${BUILD_NUMBER}";
             //echo buildNumber;
             //configJson = parseConfig(path, "ecs-WebApiSample.config", buildNumber);
-            configJson.each{ echo it }
+            echo configJson.ecr;
             // sh 'rm -rf Publish'
             // sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
             //def output = sh returnStdout: true, script: 'aws ecr get-login --region ap-southeast-2'
