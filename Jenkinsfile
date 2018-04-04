@@ -31,7 +31,7 @@ node {
             //def buildNumber = "${BUILD_NUMBER}";
             //echo buildNumber;
             //configJson = parseConfig(path, "ecs-WebApiSample.config", buildNumber);
-            echo configJson.ecr;
+            //echo configJson.ecr;
             // sh 'rm -rf Publish'
             // sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
             //def output = sh returnStdout: true, script: 'aws ecr get-login --region ap-southeast-2'
@@ -77,9 +77,12 @@ node {
     // }
 }
 
-def getConfig(path) {
-    def configFile = new File("${path}");
-    return new JsonSlurper().parseText(configFile.text);
+def Object getConfig(path) {
+    //echo "asdf"
+    //def configFile = new File("${path}");
+    //return new JsonSlurper().parseText(configFile.text);
+    def json = sh returnStdout: true, script: "cat ${path}"
+    echo json;
 }
 
 def parseConfig(path, config, buildNumber) {
