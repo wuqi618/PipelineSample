@@ -8,7 +8,7 @@ Parameters:
   VPC:
     Type: String
   Subnets:
-    Type: CommaDelimitedList
+    Type: List
 Resources:
   LoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup

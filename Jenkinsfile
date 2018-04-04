@@ -80,18 +80,18 @@ def deploy(config) {
 }
 
 def stackExists(config) {
-    def exitValue = sh returnStatus: true, script: 'aws cloudformation describe-stacks --stack-name ${config.stackName} --region ${config.region}';
+    def exitValue = sh returnStatus: true, script: "aws cloudformation describe-stacks --stack-name ${config.stackName} --region ${config.region}";
     return exitValue == 0;
 }
 
 def createStack(config) {
     echo "createStack"
-    sh "aws cloudformation create-stack --stack-name ${config.stackName} --template-body file://${config.template} --parameters ParameterKey=Image,ParameterValue=${config.image} ParameterKey=ECSCluster,ParameterValue=${config.cluster} ParameterKey=VPC,ParameterValue=${config.vpcId} ParameterKey=Subnets,ParameterValue=\"${config.subnetIds}\" --region ${config.region}";
+    sh "aws cloudformation create-stack --stack-name ${config.stackName} --template-body file://${config.template} --parameters ParameterKey=Image,ParameterValue=${config.image} ParameterKey=ECSCluster,ParameterValue=${config.cluster} ParameterKey=VPC,ParameterValue=${config.vpcId} ParameterKey=Subnets,ParameterValue=\\\"${config.subnetIds}\\\" --region ${config.region}";
     sh "aws cloudformation wait stack-create-complete --stack-name ${config.stackName} --region ${config.region}"
 }
 
 def updateStack(config) {
     echo "updateStack"
-    sh "aws cloudformation update-stack --stack-name ${config.stackName} --template-body file://${config.template} --parameters ParameterKey=Image,ParameterValue=${config.image} ParameterKey=ECSCluster,ParameterValue=${config.cluster} ParameterKey=VPC,ParameterValue=${config.vpcId} ParameterKey=Subnets,ParameterValue=\"${config.subnetIds}\" --region ${config.region}";
+    sh "aws cloudformation update-stack --stack-name ${config.stackName} --template-body file://${config.template} --parameters ParameterKey=Image,ParameterValue=${config.image} ParameterKey=ECSCluster,ParameterValue=${config.cluster} ParameterKey=VPC,ParameterValue=${config.vpcId} ParameterKey=Subnets,ParameterValue=\\\"${config.subnetIds}\\\" --region ${config.region}";
     sh "aws cloudformation wait stack-update-complete --stack-name ${config.stackName} --region ${config.region}"
 }
