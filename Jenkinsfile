@@ -1,5 +1,7 @@
 import groovy.json.JsonSlurper
 
+def config;
+
 node {
     stage('checkout') {
         // git 'https://github.com/wuqi618/PipelineSample.git'
@@ -20,17 +22,18 @@ node {
     // }
     
     stage('publish') {
-        //echo "aaaa"
         def path = "${pwd()}/CloudFormation/ecs-WebApiSample.config";
-        echo path;
-        def config = getConfig(path);
+        def json = sh returnStdout: true, script: "cat ${path}"
+        config = new JsonSlurper().parseText(json);
 
         dir('src/WebApiSample/WebApiSample/') {
-            echo "---------------------"
-            def output = sh returnStdout: true, script: 'aws ecr get-login --region ap-southeast-2'
-            echo output;
+            //def json = sh returnStdout: true, script: "cat ${path}"
 
-            //publish(config);
+           // echo "---------------------"
+            //def output = sh returnStdout: true, script: 'aws ecr get-login --region ap-southeast-2'
+            //echo output;
+
+            publish(config);
             
             // sh 'rm -rf Publish'
             // sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
