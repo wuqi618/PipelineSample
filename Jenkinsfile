@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+
 node {
     stage('checkout') {
         // git 'https://github.com/wuqi618/PipelineSample.git'
@@ -32,13 +34,14 @@ node {
 
     stage('deploy') {
         dir('CloudFormation/') {
-            def dir = sh returnStdout: true, script: 'echo $PWD'
-            dir = dir.trim()
-            def image = "531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/webapisample:${BUILD_NUMBER}"
-            def cluster = "pipeline-ecs-cluster"
-            def vpc = "vpc-9c42f4fb"
-            def subnets = "subnet-aa7e1de3\\\\,subnet-98c7b1ff"
-            sh "aws cloudformation create-stack --stack-name webapisample --template-body file://${dir}/ecs-WebApiSample.yml --parameters ParameterKey=Image,ParameterValue=${image} ParameterKey=ECSCluster,ParameterValue=${cluster} ParameterKey=VPC,ParameterValue=${vpc} ParameterKey=Subnets,ParameterValue=${subnets} --region ap-southeast-2"
+            //def dir = sh returnStdout: true, script: 'echo $PWD'
+            //dir = dir.trim()
+            echo pwd()
+            //def image = "531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/webapisample:${BUILD_NUMBER}"
+            //def cluster = "pipeline-ecs-cluster"
+            //def vpc = "vpc-9c42f4fb"
+            //def subnets = "subnet-aa7e1de3\\\\,subnet-98c7b1ff"
+            //sh "aws cloudformation create-stack --stack-name webapisample --template-body file://${dir}/ecs-WebApiSample.yml --parameters ParameterKey=Image,ParameterValue=${image} ParameterKey=ECSCluster,ParameterValue=${cluster} ParameterKey=VPC,ParameterValue=${vpc} ParameterKey=Subnets,ParameterValue=${subnets} --region ap-southeast-2"
         }
     }
     
@@ -59,4 +62,39 @@ node {
     //         archiveArtifacts '**'
     //     }
     // }
+}
+
+
+def deploy(path, template, config, buildNumber) {
+    def configJson = parseConfig(path, config, buildNumber);
+
+    if(stackExists(configJson)) {
+        updateStack(configJson, path, template);
+    } else {
+        createStack(configJson, path, template);
+    }
+}
+
+def parseConfig(path, config, buildNumber) {
+    def configFile = new File("${path}${config}");
+    def configJson = new JsonSlurper().parseText(configFile.text);
+    configJson.ecr = "${configJson.ecr}:${buildNumber}";
+    configJson.subnets = configJson.subnets.join('\\\\,');
+    return configJson;
+}
+
+def Boolean stackExists(configJson) {
+    def p = "aws cloudformation describe-stacks --stack-name ${configJson.stackName} --region ${configJson.region}".execute();
+    p.waitFor();
+    return p.exitValue() == 0;
+}
+
+def createStack(configJson, path, template) {
+    sh "aws cloudformation create-stack --stack-name ${configJson.stackName} --template-body file://${dir}${template} --parameters ParameterKey=Image,ParameterValue=${configJson.ecr} ParameterKey=ECSCluster,ParameterValue=${configJson.cluster} ParameterKey=VPC,ParameterValue=${configJson.vpc} ParameterKey=Subnets,ParameterValue=${configJson.subnets} --region ${configJson.region}";
+    sh "aws cloudformation wait stack-create-complete  --stack-name ${configJson.stackName} --region ${configJson.region}"
+}
+
+def updateStack(configJson, path, template) {
+    sh "aws cloudformation update-stack --stack-name ${configJson.stackName} --template-body file://${dir}${template} --parameters ParameterKey=Image,ParameterValue=${configJson.ecr} ParameterKey=ECSCluster,ParameterValue=${configJson.cluster} ParameterKey=VPC,ParameterValue=${configJson.vpc} ParameterKey=Subnets,ParameterValue=${configJson.subnets} --region ${configJson.region}";
+    sh "aws cloudformation wait stack-update-complete  --stack-name ${configJson.stackName} --region ${configJson.region}"
 }

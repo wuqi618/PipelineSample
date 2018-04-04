@@ -4,3 +4,15 @@ cloud init output:
 restart jenkins
 sudo /etc/init.d/jenkins restart
 Usage: /etc/init.d/jenkins {start|stop|status|restart|force-reload}
+
+Groovy doc:
+https://www.tutorialspoint.com/groovy/index.htm
+
+
+jenkins script console
+Manage Jenkins > Script Console (/script)
+script example:
+def p = "aws cloudformation describe-stacks --stack-name webapisample --region ap-southeast-2".execute()
+p.waitFor()
+println p.text
+println p.exitValue()
