@@ -2,22 +2,21 @@ def config;
 
 node {
     stage('checkout') {
-        // git 'https://github.com/wuqi618/PipelineSample.git'
         checkout scm
     }
     
-    // stage('build') {
-    //    dir('src/WebApiSample/') {
-    //        sh 'dotnet restore -r ubuntu.16.04-x64'
-    //        sh 'dotnet build -c Release -r ubuntu.16.04-x64'
-    //    }
-    // }
+    stage('build') {
+       dir('src/WebApiSample/') {
+           sh 'dotnet restore -r ubuntu.16.04-x64'
+           sh 'dotnet build -c Release -r ubuntu.16.04-x64'
+       }
+    }
     
-    // stage('test') {
-    //     dir('src/WebApiSample/Tests/') {
-    //         sh 'dotnet xunit -c Release -xml TestResult/TestResult.xml'
-    //     }
-    // }
+    stage('test') {
+        dir('src/WebApiSample/Tests/') {
+            sh 'dotnet xunit -c Release -xml TestResult/TestResult.xml'
+        }
+    }
     
     stage('publish') {
         config = getConfig();
@@ -39,29 +38,28 @@ node {
     //     }
     // }
     
-    // stage('archive') {
-    //     dir('src/WebApiSample/Tests/') {
-    //         step([$class: 'XUnitPublisher', testTimeMargin: '3000', thresholdMode: 1, thresholds: [[$class: 'FailedThreshold', failureNewThreshold: '0', failureThreshold: '0', unstableNewThreshold: '0', unstableThreshold: '0'], [$class: 'SkippedThreshold', failureNewThreshold: '', failureThreshold: '', unstableNewThreshold: '', unstableThreshold: '']], tools: [[$class: 'XUnitDotNetTestType', deleteOutputFiles: true, failIfNotNew: true, pattern: 'TestResult/*.xml', skipNoTestFiles: false, stopProcessingIfError: true]]])
-    //     }
+    stage('archive') {
+        dir('src/WebApiSample/Tests/') {
+            step([$class: 'XUnitPublisher', testTimeMargin: '3000', thresholdMode: 1, thresholds: [[$class: 'FailedThreshold', failureNewThreshold: '0', failureThreshold: '0', unstableNewThreshold: '0', unstableThreshold: '0'], [$class: 'SkippedThreshold', failureNewThreshold: '', failureThreshold: '', unstableNewThreshold: '', unstableThreshold: '']], tools: [[$class: 'XUnitDotNetTestType', deleteOutputFiles: true, failIfNotNew: true, pattern: 'TestResult/*.xml', skipNoTestFiles: false, stopProcessingIfError: true]]])
+        }
         
-    //     dir('src/WebApiSample/WebApiSample/Publish/') {
-    //         archiveArtifacts '**'
-    //     }
-    // }
+        dir('src/WebApiSample/WebApiSample/Publish/') {
+            archiveArtifacts '**'
+        }
+    }
 }
 
 def getConfig() {
     // requires plugin: Pipeline Utility Steps
     def json = readJSON file: "${WORKSPACE}/CloudFormation/ecs-WebApiSample.config";
     json.image = json.image.replaceAll("%BUILD_NUMBER%", BUILD_NUMBER);
-    //json.subnetIds = json.subnetIds.replaceAll(",", "\\\\\\\\,");
     json.template = json.template.replaceAll("%WORKSPACE%", WORKSPACE);
     return json;
 }
 
 def publish(config) {
-    // sh 'rm -rf Publish'
-    // sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
+    sh 'rm -rf Publish'
+    sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
     
     def output = sh returnStdout: true, script: "aws ecr get-login --region ${config.region}"
     output = output.replaceFirst(" -e none ", " ")
@@ -85,13 +83,11 @@ def stackExists(config) {
 }
 
 def createStack(config) {
-    echo "createStack"
     sh "aws cloudformation create-stack --stack-name ${config.stackName} --template-body file://${config.template} --parameters ParameterKey=Image,ParameterValue=${config.image} ParameterKey=ECSCluster,ParameterValue=${config.cluster} ParameterKey=VPC,ParameterValue=${config.vpcId} ParameterKey=Subnets,ParameterValue=\\\"${config.subnetIds}\\\" --region ${config.region}";
     sh "aws cloudformation wait stack-create-complete --stack-name ${config.stackName} --region ${config.region}"
 }
 
 def updateStack(config) {
-    echo "updateStack"
     sh "aws cloudformation update-stack --stack-name ${config.stackName} --template-body file://${config.template} --parameters ParameterKey=Image,ParameterValue=${config.image} ParameterKey=ECSCluster,ParameterValue=${config.cluster} ParameterKey=VPC,ParameterValue=${config.vpcId} ParameterKey=Subnets,ParameterValue=\\\"${config.subnetIds}\\\" --region ${config.region}";
     sh "aws cloudformation wait stack-update-complete --stack-name ${config.stackName} --region ${config.region}"
 }
