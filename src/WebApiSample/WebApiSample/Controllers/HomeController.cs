@@ -12,7 +12,8 @@ namespace WebApiSample.Controllers
         [HttpGet]
         public string Index()
         {
-            return "WebApiSample";
+            var hostname = Environment.GetEnvironmentVariable("HOSTNAME");
+            return $"WebApiSample-{hostname}";
         }
     }
 }
