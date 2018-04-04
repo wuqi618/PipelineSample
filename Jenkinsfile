@@ -20,8 +20,7 @@ node {
     // }
     
     stage('publish') {
-        def path = "${pwd()}/CloudFormation/ecs-WebApiSample.config";
-        config = readJSON file: path;
+        config = getConfig();
 
         dir('src/WebApiSample/WebApiSample/') {
             publish(config);
@@ -30,8 +29,9 @@ node {
 
     stage('deploy') {
         dir('CloudFormation/') {
-            def path = pwd();
-            def buildNumber = "${BUILD_NUMBER}";
+            deploy(config);
+            // def path = pwd();
+            // def buildNumber = "${BUILD_NUMBER}";
             //deploy(path, "ecs-WebApiSample.yml", "ecs-WebApiSample.config", buildNumber);
             //def dir = sh returnStdout: true, script: 'echo $PWD'
             //dir = dir.trim()
@@ -62,23 +62,28 @@ node {
     // }
 }
 
+def getConfig() {
+    def json = readJSON file: "${WORKSPACE}/CloudFormation/ecs-WebApiSample.config";
+    json.image = json.image.replaceAll("{buildNumber}", BUILD_NUMBER);
+    json.subnets = json.subnets.replaceAll(",", "\\\\,");
+    json.template = json.template.replaceAll("{path}", WORKSPACE);
+    return json;
+}
+
 def publish(config) {
     // sh 'rm -rf Publish'
     // sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
     
-    def image = "${config.ecr}:${BUILD_NUMBER}";
     def output = sh returnStdout: true, script: "aws ecr get-login --region ${config.region}"
     output = output.replaceFirst(" -e none ", " ")
     echo output
     sh "${output}"
     sh "docker build -t webapisample -f Dockerfile.ci ."
-    sh "docker tag webapisample:latest ${image}"
-    sh "docker push ${image}"
+    sh "docker tag webapisample:latest ${config.image}"
+    sh "docker push ${config.image}"
 }
 
-def deploy(config, path, template, buildNumber) {
-    def config = parseConfig(config);
-
+def deploy(config) {
     if(stackExists(config)) {
         echo "updateStack";
         //updateStack(config, path, template);
@@ -88,24 +93,17 @@ def deploy(config, path, template, buildNumber) {
     }
 }
 
-def parseConfig(config) {
-    config.ecr = "${config.ecr}:${BUILD_NUMBER}";
-    config.subnets = config.subnets.join('\\\\,');
-    config.template = "${WORKSPACE}/${config.template}"
-    return config;
-}
-
-def Boolean stackExists(config) {
+def stackExists(config) {
     def exitValue = sh returnStatus: true, script: 'aws cloudformation describe-stacks --stack-name ${config.stackName} --region ${config.region}';
     return exitValue == 0;
 }
 
 def createStack(config) {
-    sh "aws cloudformation create-stack --stack-name ${config.stackName} --template-body file://${config.template} --parameters ParameterKey=Image,ParameterValue=${config.ecr} ParameterKey=ECSCluster,ParameterValue=${config.cluster} ParameterKey=VPC,ParameterValue=${config.vpc} ParameterKey=Subnets,ParameterValue=${config.subnets} --region ${config.region}";
-    sh "aws cloudformation wait stack-create-complete  --stack-name ${config.stackName} --region ${config.region}"
+    sh "aws cloudformation create-stack --stack-name ${config.stackName} --template-body file://${config.template} --parameters ParameterKey=Image,ParameterValue=${config.image} ParameterKey=ECSCluster,ParameterValue=${config.cluster} ParameterKey=VPC,ParameterValue=${config.vpc} ParameterKey=Subnets,ParameterValue=${config.subnets} --region ${config.region}";
+    sh "aws cloudformation wait stack-create-complete --stack-name ${config.stackName} --region ${config.region}"
 }
 
 def updateStack(config) {
-    sh "aws cloudformation update-stack --stack-name ${config.stackName} --template-body file://${config.template} --parameters ParameterKey=Image,ParameterValue=${config.ecr} ParameterKey=ECSCluster,ParameterValue=${config.cluster} ParameterKey=VPC,ParameterValue=${config.vpc} ParameterKey=Subnets,ParameterValue=${config.subnets} --region ${config.region}";
-    sh "aws cloudformation wait stack-update-complete  --stack-name ${config.stackName} --region ${config.region}"
+    sh "aws cloudformation update-stack --stack-name ${config.stackName} --template-body file://${config.template} --parameters ParameterKey=Image,ParameterValue=${config.image} ParameterKey=ECSCluster,ParameterValue=${config.cluster} ParameterKey=VPC,ParameterValue=${config.vpc} ParameterKey=Subnets,ParameterValue=${config.subnets} --region ${config.region}";
+    sh "aws cloudformation wait stack-update-complete --stack-name ${config.stackName} --region ${config.region}"
 }
