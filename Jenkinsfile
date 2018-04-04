@@ -1,7 +1,5 @@
 import groovy.json.JsonSlurper
 
-def configJson;
-
 node {
     stage('checkout') {
         // git 'https://github.com/wuqi618/PipelineSample.git'
@@ -22,10 +20,15 @@ node {
     // }
     
     stage('publish') {
+        def path = "${pwd()}/CloudFormation/ecs-WebApiSample.config";
+        def configJson = getConfig(path)
+
         dir('src/WebApiSample/WebApiSample/') {
-            def path = pwd();
-            def buildNumber = "${BUILD_NUMBER}";
-            configJson = parseConfig(path, "ecs-WebApiSample.config", buildNumber);
+            //def path = pwd();
+            //echo path;
+            //def buildNumber = "${BUILD_NUMBER}";
+            //echo buildNumber;
+            //configJson = parseConfig(path, "ecs-WebApiSample.config", buildNumber);
             configJson.each{ echo it }
             // sh 'rm -rf Publish'
             // sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
@@ -72,9 +75,13 @@ node {
     // }
 }
 
+def getConfig(path) {
+    def configFile = new File("${path}");
+    return new JsonSlurper().parseText(configFile.text);
+}
+
 def parseConfig(path, config, buildNumber) {
     def configFile = new File("${path}/${config}");
-    echo configFile;
     def configJson = new JsonSlurper().parseText(configFile.text);
     configJson.ecr = "${configJson.ecr}:${buildNumber}";
     configJson.subnets = configJson.subnets.join('\\\\,');
