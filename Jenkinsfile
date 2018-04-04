@@ -78,11 +78,12 @@ node {
     // }
 }
 
-def getConfig(path) {
+def Object getConfig(path) {
     //echo "asdf"
     //def configFile = new File("${path}");
     //return new JsonSlurper().parseText(configFile.text);
     def json = sh returnStdout: true, script: "cat ${path}"
+    echo "${BUILD_NUMBER}"
     return new JsonSlurper().parseText(json);
 }
 
