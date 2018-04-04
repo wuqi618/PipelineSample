@@ -20,7 +20,9 @@ node {
     // }
     
     stage('publish') {
+        echo "aaaa"
         def path = "${pwd()}/CloudFormation/ecs-WebApiSample.config";
+        echo path;
         def configJson = getConfig(path)
 
         dir('src/WebApiSample/WebApiSample/') {
