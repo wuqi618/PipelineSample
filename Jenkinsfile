@@ -82,8 +82,8 @@ def Object getConfig(path) {
     //echo "asdf"
     //def configFile = new File("${path}");
     //return new JsonSlurper().parseText(configFile.text);
-    def json = sh returnStdout: true, script: "cat ${path}"
-    echo "${BUILD_NUMBER}"
+    //def json = sh returnStdout: true, script: "cat ${path}"
+    def json = "cat ${path}".execute().text;
     return new JsonSlurper().parseText(json);
 }
 
