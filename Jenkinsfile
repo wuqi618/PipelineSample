@@ -64,9 +64,9 @@ node {
 
 def getConfig() {
     def json = readJSON file: "${WORKSPACE}/CloudFormation/ecs-WebApiSample.config";
-    json.image = json.image.replaceAll("[buildNumber]", BUILD_NUMBER);
+    json.image = json.image.replaceAll("%buildNumber%", BUILD_NUMBER);
     json.subnets = json.subnets.replaceAll(",", "\\\\,");
-    json.template = json.template.replaceAll("[path]", WORKSPACE);
+    json.template = json.template.replaceAll("%path%", WORKSPACE);
     return json;
 }
 
