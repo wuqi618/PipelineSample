@@ -26,10 +26,11 @@ node {
         def config = getConfig(path);
 
         dir('src/WebApiSample/WebApiSample/') {
+            echo "---------------------"
             def output = sh returnStdout: true, script: 'aws ecr get-login --region ap-southeast-2'
             echo output;
 
-            publish(config);
+            //publish(config);
             
             // sh 'rm -rf Publish'
             // sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
