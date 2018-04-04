@@ -28,19 +28,7 @@ node {
     }
 
     stage('deploy') {
-        dir('CloudFormation/') {
-            deploy(config);
-            // def path = pwd();
-            // def buildNumber = "${BUILD_NUMBER}";
-            //deploy(path, "ecs-WebApiSample.yml", "ecs-WebApiSample.config", buildNumber);
-            //def dir = sh returnStdout: true, script: 'echo $PWD'
-            //dir = dir.trim()
-            //def image = "531585151505.dkr.ecr.ap-southeast-2.amazonaws.com/webapisample:${BUILD_NUMBER}"
-            //def cluster = "pipeline-ecs-cluster"
-            //def vpc = "vpc-9c42f4fb"
-            //def subnets = "subnet-aa7e1de3\\\\,subnet-98c7b1ff"
-            //sh "aws cloudformation create-stack --stack-name webapisample --template-body file://${dir}/ecs-WebApiSample.yml --parameters ParameterKey=Image,ParameterValue=${image} ParameterKey=ECSCluster,ParameterValue=${cluster} ParameterKey=VPC,ParameterValue=${vpc} ParameterKey=Subnets,ParameterValue=${subnets} --region ap-southeast-2"
-        }
+        deploy(config);
     }
     
     // stage('zip & s3') {
@@ -63,10 +51,11 @@ node {
 }
 
 def getConfig() {
+    // requires plugin: Pipeline Utility Steps
     def json = readJSON file: "${WORKSPACE}/CloudFormation/ecs-WebApiSample.config";
-    json.image = json.image.replaceAll("%buildNumber%", BUILD_NUMBER);
+    json.image = json.image.replaceAll("%BUILD_NUMBER%", BUILD_NUMBER);
     json.subnets = json.subnets.replaceAll(",", "\\\\,");
-    json.template = json.template.replaceAll("%path%", WORKSPACE);
+    json.template = json.template.replaceAll("%WORKSPACE%", WORKSPACE);
     return json;
 }
 
@@ -76,7 +65,6 @@ def publish(config) {
     
     def output = sh returnStdout: true, script: "aws ecr get-login --region ${config.region}"
     output = output.replaceFirst(" -e none ", " ")
-    echo output
     sh "${output}"
     sh "docker build -t webapisample -f Dockerfile.ci ."
     sh "docker tag webapisample:latest ${config.image}"
@@ -85,11 +73,9 @@ def publish(config) {
 
 def deploy(config) {
     if(stackExists(config)) {
-        echo "updateStack";
-        //updateStack(config, path, template);
+        updateStack(config);
     } else {
-        echo "createStack"
-        //createStack(config, path, template);
+        createStack(config);
     }
 }
 
