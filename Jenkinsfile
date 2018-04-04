@@ -25,15 +25,15 @@ node {
         def path = "${pwd()}/CloudFormation/ecs-WebApiSample.config";
         def json = sh returnStdout: true, script: "cat ${path}"
         config = new JsonSlurper().parseText(json);
+        // config = getConfig(path);
 
         dir('src/WebApiSample/WebApiSample/') {
-            //def json = sh returnStdout: true, script: "cat ${path}"
+            def image = "${config.ecr}:${BUILD_NUMBER}";
+            def output = sh returnStdout: true, script: "aws ecr get-login --region ${config.region}";
+            output = output.replaceFirst(" -e none ", " ");
+            echo output;
 
-           // echo "---------------------"
-            //def output = sh returnStdout: true, script: 'aws ecr get-login --region ap-southeast-2'
-            //echo output;
-
-            publish(config);
+            // publish(config);
             
             // sh 'rm -rf Publish'
             // sh 'dotnet publish WebApiSample.csproj -c Release -r ubuntu.16.04-x64 -o Publish'
@@ -93,10 +93,10 @@ def publish(config) {
     def output = sh returnStdout: true, script: "aws ecr get-login --region ${config.region}"
     output = output.replaceFirst(" -e none ", " ")
     echo output
-    sh "${output}"
-    sh "docker build -t webapisample -f Dockerfile.ci ."
-    sh "docker tag webapisample:latest ${image}"
-    sh "docker push ${image}"
+    // sh "${output}"
+    // sh "docker build -t webapisample -f Dockerfile.ci ."
+    // sh "docker tag webapisample:latest ${image}"
+    // sh "docker push ${image}"
 }
 
 def parseConfig(path, config, buildNumber) {
