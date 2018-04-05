@@ -175,7 +175,7 @@ Resources:
           - ''
           - - "#!/bin/bash -xe\n"
             - "sudo apt-get update\n"
-            - "sudo timedatectl set-timezone \"Australia/Melbourne\""
+            - "sudo timedatectl set-timezone \"Australia/Melbourne\"\n"
             - "sudo apt-get -y install python-setuptools\n"
             - "sudo apt-get -y install awscli\n"
             - "sudo easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n"
