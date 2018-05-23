@@ -8,9 +8,9 @@ Usage: /etc/init.d/jenkins {start|stop|status|restart|force-reload}
 change jenkins workspace to local:
 /var/lib/jenkins/workspace/${ITEM_FULL_NAME}
 
-install plugin:
-Pipeline Utility Steps
-xunit
+Specify ref specs
++refs/heads/master:refs/remotes/@{remote}/master
++refs/pull/*:refs/remotes/@{remote}/pr/*
 
 Groovy doc:
 https://www.tutorialspoint.com/groovy/index.htm
