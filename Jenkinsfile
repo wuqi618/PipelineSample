@@ -12,23 +12,23 @@ node {
        }
     }
     
-    stage('test') {
-        dir('src/WebApiSample/Tests/') {
-            sh 'dotnet xunit -c Release -xml TestResult/TestResult.xml'
-        }
-    }
+    // stage('test') {
+    //     dir('src/WebApiSample/Tests/') {
+    //         sh 'dotnet xunit -c Release -xml TestResult/TestResult.xml'
+    //     }
+    // }
     
-    stage('publish') {
-        config = getConfig();
+    // stage('publish') {
+    //     config = getConfig();
 
-        dir('src/WebApiSample/WebApiSample/') {
-            publish(config);
-        }
-    }
+    //     dir('src/WebApiSample/WebApiSample/') {
+    //         publish(config);
+    //     }
+    // }
 
-    stage('deploy') {
-        deploy(config);
-    }
+    // stage('deploy') {
+    //     deploy(config);
+    // }
     
     // stage('zip & s3') {
     //     dir('src/WebApiSample/WebApiSample/') {
@@ -38,15 +38,15 @@ node {
     //     }
     // }
     
-    stage('archive') {
-        dir('src/WebApiSample/Tests/') {
-            step([$class: 'XUnitPublisher', testTimeMargin: '3000', thresholdMode: 1, thresholds: [[$class: 'FailedThreshold', failureNewThreshold: '0', failureThreshold: '0', unstableNewThreshold: '0', unstableThreshold: '0'], [$class: 'SkippedThreshold', failureNewThreshold: '', failureThreshold: '', unstableNewThreshold: '', unstableThreshold: '']], tools: [[$class: 'XUnitDotNetTestType', deleteOutputFiles: true, failIfNotNew: true, pattern: 'TestResult/*.xml', skipNoTestFiles: false, stopProcessingIfError: true]]])
-        }
+    // stage('archive') {
+    //     dir('src/WebApiSample/Tests/') {
+    //         step([$class: 'XUnitPublisher', testTimeMargin: '3000', thresholdMode: 1, thresholds: [[$class: 'FailedThreshold', failureNewThreshold: '0', failureThreshold: '0', unstableNewThreshold: '0', unstableThreshold: '0'], [$class: 'SkippedThreshold', failureNewThreshold: '', failureThreshold: '', unstableNewThreshold: '', unstableThreshold: '']], tools: [[$class: 'XUnitDotNetTestType', deleteOutputFiles: true, failIfNotNew: true, pattern: 'TestResult/*.xml', skipNoTestFiles: false, stopProcessingIfError: true]]])
+    //     }
         
-        dir('src/WebApiSample/WebApiSample/Publish/') {
-            archiveArtifacts '**'
-        }
-    }
+    //     dir('src/WebApiSample/WebApiSample/Publish/') {
+    //         archiveArtifacts '**'
+    //     }
+    // }
 }
 
 def getConfig() {
